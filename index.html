@@ -3,22 +3,43 @@
 <head>
     <meta charset="utf-8">
     <title>WPB Opener</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f7f9; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        .path { color: #555; font-size: 0.9rem; word-break: break-all; margin-top: 10px; }
+    </style>
 </head>
 <body>
+    <div class="card">
+        <h3>Wドライブを開いています...</h3>
+        <p>ポップアップが表示されたら「開く」を押してください。</p>
+        <div id="pathDisplay" class="path"></div>
+    </div>
+
     <script>
-        // URLのパラメータからpathを取得 (?path=W:\...)
         const urlParams = new URLSearchParams(window.location.search);
         const path = urlParams.get('path');
+        const decodedPath = path ? decodeURIComponent(path) : null;
 
-        if (path) {
-            // wpbプロトコルを呼び出し
-            window.location.href = "wpb:" + decodeURIComponent(path);
-            // 0.5秒後にタブを閉じる（ブラウザによって制限される場合があります）
-            setTimeout(() => { window.close(); }, 500);
+        if (decodedPath) {
+            document.getElementById('pathDisplay').innerText = decodedPath;
+
+            // プロトコル呼び出し
+            window.location.href = "wpb:" + decodedPath;
+
+            // 【解決策】
+            // 方法1: 10秒待ってから閉じる (ポップアップ操作の時間を確保)
+            setTimeout(() => {
+                window.close();
+            }, 10000); 
+
+            // 方法2: ブラウザにフォーカスが戻ったら閉じる (許可ボタンを押した後はブラウザに意識が戻るため)
+            window.onfocus = function() {
+                setTimeout(() => { window.close(); }, 500);
+            };
         } else {
-            document.body.innerText = "パスが指定されていません。";
+            document.body.innerHTML = "<h3>パスが指定されていません</h3>";
         }
     </script>
-    <p>Wドライブを開いています...</p>
 </body>
 </html>
