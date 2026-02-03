@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WPB Opener</title>
+</head>
+<body>
+    <script>
+        // URLのパラメータからpathを取得 (?path=W:\...)
+        const urlParams = new URLSearchParams(window.location.search);
+        const path = urlParams.get('path');
+
+        if (path) {
+            // wpbプロトコルを呼び出し
+            window.location.href = "wpb:" + decodeURIComponent(path);
+            // 0.5秒後にタブを閉じる（ブラウザによって制限される場合があります）
+            setTimeout(() => { window.close(); }, 500);
+        } else {
+            document.body.innerText = "パスが指定されていません。";
+        }
+    </script>
+    <p>Wドライブを開いています...</p>
+</body>
+</html>
