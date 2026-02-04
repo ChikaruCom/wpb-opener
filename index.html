@@ -2,42 +2,23 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Opening...</title>
-    <script>
-        // 【最速処理】
-        (function() {
-            const params = new URLSearchParams(window.location.search);
-            const path = params.get('path');
-            if(path) {
-                // 1. プロトコル実行 (WPBを呼び出し)
-                window.location.href = "wpb:" + decodeURIComponent(path);
-            }
-        })();
-    </script>
-    <style>
-        body { font-family: "Segoe UI", sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; color: #333; }
-        .card { background: white; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
-        h3 { margin: 0 0 5px; color: #0078d4; font-size: 1.2rem; }
-        p { font-size: 0.8rem; color: #888; margin: 0; }
-    </style>
+    <title>WPB Opener</title>
 </head>
 <body>
-    <div class="card">
-        <h3>✅ 起動しました</h3>
-        <p>このタブは閉じてください</p>
-    </div>
-
     <script>
-        // 処理が終わったら閉じる試行
-        setTimeout(() => {
-            // 方法1: 素直に閉じる
-            window.close();
+        // URLのパラメータからpathを取得 (?path=W:\...)
+        const urlParams = new URLSearchParams(window.location.search);
+        const path = urlParams.get('path');
 
-            // 方法2: 【ハック】自分自身を空ページとして開き直してから閉じる
-            // (これで「スクリプトが開いたウィンドウ」と誤認させて閉じるテクニック)
-            window.open('about:blank', '_self').close();
-            
-        }, 500); // 0.5秒待つ
+        if (path) {
+            // wpbプロトコルを呼び出し
+            window.location.href = "wpb:" + decodeURIComponent(path);
+            // 0.5秒後にタブを閉じる（ブラウザによって制限される場合があります）
+            setTimeout(() => { window.close(); }, 500);
+        } else {
+            document.body.innerText = "パスが指定されていません。";
+        }
     </script>
+    <p>Wドライブを開いています...</p>
 </body>
 </html>
