@@ -4,34 +4,40 @@
     <meta charset="utf-8">
     <title>Opening...</title>
     <script>
-        // 【最速処理】 DOM読み込みを待たずに即実行
+        // 【最速処理】
         (function() {
             const params = new URLSearchParams(window.location.search);
             const path = params.get('path');
             if(path) {
-                // 許可済みなら、ここで一瞬でエクスプローラーが開き、ユーザーはブラウザの存在に気づかないレベルになる
+                // 1. プロトコル実行 (WPBを呼び出し)
                 window.location.href = "wpb:" + decodeURIComponent(path);
             }
         })();
     </script>
     <style>
-        /* 画面は一瞬しか表示されない前提なのでシンプルに */
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; }
-        .msg { color: #888; font-size: 0.8rem; }
+        body { font-family: "Segoe UI", sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; color: #333; }
+        .card { background: white; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        h3 { margin: 0 0 5px; color: #0078d4; font-size: 1.2rem; }
+        p { font-size: 0.8rem; color: #888; margin: 0; }
     </style>
 </head>
 <body>
-    <div class="msg">起動中...</div>
+    <div class="card">
+        <h3>✅ 起動しました</h3>
+        <p>このタブは閉じてください</p>
+    </div>
+
     <script>
-        // 処理が終わったら即閉じを試みる
-        // (許可済み設定ならポップアップが出ないので、フォーカス制御等は不要でシンプルに閉じる)
+        // 処理が終わったら閉じる試行
         setTimeout(() => {
-            // 閉じるのを試みる
+            // 方法1: 素直に閉じる
             window.close();
+
+            // 方法2: 【ハック】自分自身を空ページとして開き直してから閉じる
+            // (これで「スクリプトが開いたウィンドウ」と誤認させて閉じるテクニック)
+            window.open('about:blank', '_self').close();
             
-            // もし閉じられなかった場合（セキュリティ制限）、完了表示にする
-            document.body.innerHTML = "<div style='text-align:center;'>✅ 完了<br><span style='font-size:10px; color:#ccc'>タブを閉じてください</span></div>";
-        }, 500); // 0.5秒だけ待って閉じる
+        }, 500); // 0.5秒待つ
     </script>
 </body>
 </html>
