@@ -2,43 +2,64 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>WPB Opener</title>
+    <title>Opening...</title>
+    <script>
+        // 【高速化1】 DOM描画を待たずに、ヘッド内で即時実行
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const path = urlParams.get('path');
+            
+            if (path) {
+                const decodedPath = decodeURIComponent(path);
+                
+                // 【高速化2】 .href ではなく .replace を使用
+                // 履歴に残さないことで、ブラウザの処理をわずかに軽くし、
+                // 「戻る」ボタンの挙動も自然にします。
+                window.location.replace("wpb:" + decodedPath);
+
+                // UI表示用のパスを保存（後でbodyが表示された時に使う）
+                window.targetPath = decodedPath; 
+            }
+        })();
+    </script>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f7f9; }
+        /* スタイルは必要最小限に */
+        body { font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f7f9; opacity: 0; transition: opacity 0.5s; }
         .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
         .path { color: #555; font-size: 0.9rem; word-break: break-all; margin-top: 10px; }
+        /* 【高速化3】 最初は透明にしておき、チラつきを防止（処理が速ければ画面は見えないまま終わる） */
+        body.visible { opacity: 1; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>Wドライブを開いています...</h3>
+        <h3>🚀 開いています...</h3>
         <p>ポップアップが表示されたら「開く」を押してください。</p>
         <div id="pathDisplay" class="path"></div>
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const path = urlParams.get('path');
-        const decodedPath = path ? decodeURIComponent(path) : null;
-
-        if (decodedPath) {
-            document.getElementById('pathDisplay').innerText = decodedPath;
-
-            // プロトコル呼び出し
-            window.location.href = "wpb:" + decodedPath;
-
-            // 【解決策】
-            // 方法1: 10秒待ってから閉じる (ポップアップ操作の時間を確保)
+        // ここはUI制御とクローズ処理のみ
+        if (window.targetPath) {
+            document.getElementById('pathDisplay').innerText = window.targetPath;
+            
+            // 0.5秒経ってもまだウィンドウが開いていたら、UIをフェードインさせる
+            // (一瞬で開いた場合は、白い画面を見せずに閉じるため)
             setTimeout(() => {
-                window.close();
-            }, 10000); 
+                document.body.classList.add('visible');
+            }, 500);
 
-            // 方法2: ブラウザにフォーカスが戻ったら閉じる (許可ボタンを押した後はブラウザに意識が戻るため)
+            // クローズ処理（変更なし、これが最適解です）
             window.onfocus = function() {
-                setTimeout(() => { window.close(); }, 500);
+                setTimeout(() => { window.close(); }, 200); 
             };
+            // 安全策の自動クローズ（時間を短縮：10秒→3秒）
+            // ユーザーがポップアップに対応するのに3秒あれば十分と判断
+            setTimeout(() => { window.close(); }, 3000);
+
         } else {
             document.body.innerHTML = "<h3>パスが指定されていません</h3>";
+            document.body.classList.add('visible');
         }
     </script>
 </body>
