@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ドラパス初期設定</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f4f7f9; }
+        .card { background: white; padding: 40px; border-radius: 10px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #0078d4; }
+        .instruction { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; text-align: left; border-radius: 5px; margin: 20px 0; }
+        .btn { background: #0078d4; color: white; padding: 15px 30px; border: none; border-radius: 5px; font-size: 1.2rem; cursor: pointer; font-weight: bold; }
+        .btn:hover { background: #005a9e; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🛠️ ドラパス接続テスト</h2>
+        <p>このボタンを押すと、ブラウザの上部に確認画面が出ます。</p>
+        
+        <div class="instruction">
+            <strong>⚠️ 重要：</strong><br>
+            表示されるポップアップの<br>
+            <span style="color:#d9534f; font-weight:bold;">□ http://... でのこのタイプのリンクは常に関連付けられたアプリで開く</span><br>
+            に必ずチェックを入れてから「開く」を押してください。
+        </div>
+
+        <button class="btn" onclick="testConnection()">接続テストを実行</button>
+        
+        <p style="margin-top:20px; font-size:0.9rem; color:#666;">
+            成功するとエクスプローラーが開きます。<br>
+            一度設定すれば、今後はワンクリックで開くようになります。
+        </p>
+    </div>
+
+    <script>
+        function testConnection() {
+            // Cドライブを開くだけの無害なパス
+            window.location.href = "wpb:W:\\";
+        }
+    </script>
+</body>
+</html>

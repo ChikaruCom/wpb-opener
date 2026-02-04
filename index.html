@@ -2,86 +2,36 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>WPB Launcher</title>
+    <title>Opening...</title>
+    <script>
+        // 【最速処理】 DOM読み込みを待たずに即実行
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const path = params.get('path');
+            if(path) {
+                // 許可済みなら、ここで一瞬でエクスプローラーが開き、ユーザーはブラウザの存在に気づかないレベルになる
+                window.location.href = "wpb:" + decodeURIComponent(path);
+            }
+        })();
+    </script>
     <style>
-        body { 
-            font-family: sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-            background: #f4f7f9; 
-            /* 初期状態を「透明」にするのをやめました。確実に表示させます。 */
-        }
-        .card { 
-            background: white; 
-            padding: 2rem; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            text-align: center; 
-            max-width: 80%;
-        }
-        .path { 
-            color: #888; 
-            font-size: 0.8rem; 
-            word-break: break-all; 
-            margin-top: 15px; 
-            padding: 10px;
-            background: #eee;
-            border-radius: 4px;
-        }
+        /* 画面は一瞬しか表示されない前提なのでシンプルに */
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; }
+        .msg { color: #888; font-size: 0.8rem; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h3>🚀 起動しています...</h3>
-        <p>ポップアップが表示されたら<b>「開く」</b>を押してください。</p>
-        <p style="font-size:0.8rem; color:#666;">（自動で閉じない場合は×で閉じてください）</p>
-        <div id="pathDisplay" class="path">読み込み中...</div>
-    </div>
-
+    <div class="msg">起動中...</div>
     <script>
-        // DOMの描画が終わってから確実に実行する
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const path = urlParams.get('path');
+        // 処理が終わったら即閉じを試みる
+        // (許可済み設定ならポップアップが出ないので、フォーカス制御等は不要でシンプルに閉じる)
+        setTimeout(() => {
+            // 閉じるのを試みる
+            window.close();
             
-            if (path) {
-                const decodedPath = decodeURIComponent(path);
-                document.getElementById('pathDisplay').innerText = decodedPath;
-
-                // 【重要】ブラウザが画面を描画する時間を少しだけ与える (100ms)
-                setTimeout(() => {
-                    // プロトコル呼び出し
-                    window.location.href = "wpb:" + decodedPath;
-                    
-                    // --- クローズ処理の多重化 ---
-
-                    // 1. フォーカスが戻ってきたら閉じる（ポップアップ操作後）
-                    // ※一度フォーカスが外れたことを検知するためのフラグ
-                    let hasLostFocus = false;
-                    window.onblur = () => { hasLostFocus = true; };
-                    window.onfocus = () => {
-                        if (hasLostFocus) {
-                            setTimeout(() => { window.close(); }, 500);
-                        }
-                    };
-
-                    // 2. 強制タイマー (3秒後に閉じる試行をする)
-                    setTimeout(() => {
-                        window.close();
-                        // close()がブロックされた場合のために、画面表示を変える
-                        document.querySelector('h3').innerText = "完了しました";
-                        document.querySelector('p').innerText = "このタブを閉じてください。";
-                    }, 3000);
-
-                }, 100);
-
-            } else {
-                document.body.innerHTML = "<div class='card'><h3>エラー</h3><p>パスが指定されていません。</p></div>";
-            }
-        };
+            // もし閉じられなかった場合（セキュリティ制限）、完了表示にする
+            document.body.innerHTML = "<div style='text-align:center;'>✅ 完了<br><span style='font-size:10px; color:#ccc'>タブを閉じてください</span></div>";
+        }, 500); // 0.5秒だけ待って閉じる
     </script>
 </body>
 </html>
