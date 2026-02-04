@@ -2,65 +2,86 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Opening...</title>
+    <title>WPB Launcher</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            background: #f4f7f9; 
+            /* 初期状態を「透明」にするのをやめました。確実に表示させます。 */
+        }
+        .card { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            text-align: center; 
+            max-width: 80%;
+        }
+        .path { 
+            color: #888; 
+            font-size: 0.8rem; 
+            word-break: break-all; 
+            margin-top: 15px; 
+            padding: 10px;
+            background: #eee;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>🚀 起動しています...</h3>
+        <p>ポップアップが表示されたら<b>「開く」</b>を押してください。</p>
+        <p style="font-size:0.8rem; color:#666;">（自動で閉じない場合は×で閉じてください）</p>
+        <div id="pathDisplay" class="path">読み込み中...</div>
+    </div>
+
     <script>
-        // 【高速化1】 DOM描画を待たずに、ヘッド内で即時実行
-        (function() {
+        // DOMの描画が終わってから確実に実行する
+        window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const path = urlParams.get('path');
             
             if (path) {
                 const decodedPath = decodeURIComponent(path);
-                
-                // 【高速化2】 .href ではなく .replace を使用
-                // 履歴に残さないことで、ブラウザの処理をわずかに軽くし、
-                // 「戻る」ボタンの挙動も自然にします。
-                window.location.replace("wpb:" + decodedPath);
+                document.getElementById('pathDisplay').innerText = decodedPath;
 
-                // UI表示用のパスを保存（後でbodyが表示された時に使う）
-                window.targetPath = decodedPath; 
+                // 【重要】ブラウザが画面を描画する時間を少しだけ与える (100ms)
+                setTimeout(() => {
+                    // プロトコル呼び出し
+                    window.location.href = "wpb:" + decodedPath;
+                    
+                    // --- クローズ処理の多重化 ---
+
+                    // 1. フォーカスが戻ってきたら閉じる（ポップアップ操作後）
+                    // ※一度フォーカスが外れたことを検知するためのフラグ
+                    let hasLostFocus = false;
+                    window.onblur = () => { hasLostFocus = true; };
+                    window.onfocus = () => {
+                        if (hasLostFocus) {
+                            setTimeout(() => { window.close(); }, 500);
+                        }
+                    };
+
+                    // 2. 強制タイマー (3秒後に閉じる試行をする)
+                    setTimeout(() => {
+                        window.close();
+                        // close()がブロックされた場合のために、画面表示を変える
+                        document.querySelector('h3').innerText = "完了しました";
+                        document.querySelector('p').innerText = "このタブを閉じてください。";
+                    }, 3000);
+
+                }, 100);
+
+            } else {
+                document.body.innerHTML = "<div class='card'><h3>エラー</h3><p>パスが指定されていません。</p></div>";
             }
-        })();
-    </script>
-    <style>
-        /* スタイルは必要最小限に */
-        body { font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f7f9; opacity: 0; transition: opacity 0.5s; }
-        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        .path { color: #555; font-size: 0.9rem; word-break: break-all; margin-top: 10px; }
-        /* 【高速化3】 最初は透明にしておき、チラつきを防止（処理が速ければ画面は見えないまま終わる） */
-        body.visible { opacity: 1; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h3>🚀 開いています...</h3>
-        <p>ポップアップが表示されたら「開く」を押してください。</p>
-        <div id="pathDisplay" class="path"></div>
-    </div>
-
-    <script>
-        // ここはUI制御とクローズ処理のみ
-        if (window.targetPath) {
-            document.getElementById('pathDisplay').innerText = window.targetPath;
-            
-            // 0.5秒経ってもまだウィンドウが開いていたら、UIをフェードインさせる
-            // (一瞬で開いた場合は、白い画面を見せずに閉じるため)
-            setTimeout(() => {
-                document.body.classList.add('visible');
-            }, 500);
-
-            // クローズ処理（変更なし、これが最適解です）
-            window.onfocus = function() {
-                setTimeout(() => { window.close(); }, 200); 
-            };
-            // 安全策の自動クローズ（時間を短縮：10秒→3秒）
-            // ユーザーがポップアップに対応するのに3秒あれば十分と判断
-            setTimeout(() => { window.close(); }, 3000);
-
-        } else {
-            document.body.innerHTML = "<h3>パスが指定されていません</h3>";
-            document.body.classList.add('visible');
-        }
+        };
     </script>
 </body>
 </html>
